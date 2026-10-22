@@ -1,0 +1,102 @@
+{
+  "camera": {
+    "type": "csi",
+    "sensor_id": 0,
+    "width": 1280,
+    "height": 720,
+    "fps": 30,
+    "process_width": 640,
+    "usb_index": 0,
+    "flip": "rotate180"
+  },
+  "detector": {
+    "confidence_threshold": 0.55,
+    "min_area_ratio": 0.0025,
+    "max_contours": 6,
+    "blur_ksize": 5,
+    "morph_ksize": 3,
+    "weights": {
+      "shape": 0.55,
+      "color": 0.3,
+      "area": 0.15
+    },
+    "classes": {
+      "STOP": {
+        "color": "red",
+        "shape": "octagon",
+        "led": "red"
+      },
+      "SLOW": {
+        "color": "yellow",
+        "shape": "triangle",
+        "led": "yellow"
+      },
+      "GO": {
+        "color": "green",
+        "shape": "circle",
+        "led": "green"
+      }
+    }
+  },
+  "colors": {
+    "red": [
+      [
+        0,
+        110,
+        70,
+        10,
+        255,
+        255
+      ],
+      [
+        170,
+        110,
+        70,
+        180,
+        255,
+        255
+      ]
+    ],
+    "yellow": [
+      [
+        18,
+        60,
+        50,
+        35,
+        255,
+        255
+      ]
+    ],
+    "green": [
+      [
+        40,
+        60,
+        45,
+        85,
+        255,
+        255
+      ]
+    ]
+  },
+  "decision": {
+    "stable_frames": 5,
+    "missing_frames": 8
+  },
+  "gpio": {
+    "mode": "BOARD",
+    "active_high": true,
+    "pins": {
+      "red": 7,
+      "yellow": 11,
+      "green": 13
+    },
+    "safe_state": "all_off",
+    "blink_hz": 2.0
+  },
+  "output": {
+    "log_dir": "results/logs",
+    "snapshot_dir": "results/runtime/snapshots",
+    "snapshot_on_change": true,
+    "status_interval": 0.5
+  }
+}

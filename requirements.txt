@@ -1,0 +1,15 @@
+# JetPack 4.6 / Ubuntu 18.04
+#
+# OpenCV, NumPy, PyGObject and GStreamer are normally installed as system
+# packages (see README). Do not install opencv-python from pip on JetPack 4.6:
+# it can replace the NVIDIA-optimised build.
+#
+#   sudo apt install python3-opencv python3-numpy python3-gi \
+#                    gstreamer1.0-tools python3-jetson-gpio
+#
+numpy>=1.13.3
+Jetson.GPIO>=2.0.0 ; platform_machine == "aarch64"
+
+# Optional, only needed to regenerate the diagrams:
+# matplotlib
+# graphviz (system package: sudo apt install graphviz)

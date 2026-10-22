@@ -1,0 +1,49 @@
+
+digraph SignRecognition {
+  rankdir=TB;
+  graph [fontname="Helvetica", fontsize=11, bgcolor="white",
+         nodesep=0.45, ranksep=0.38, pad=0.25];
+  node [shape=box, style="rounded,filled", fontname="Helvetica",
+        fontsize=11, color="#4a4a4a", fillcolor="#f5f7fa", penwidth=1.1];
+  edge [fontname="Helvetica", fontsize=10, color="#4a4a4a", penwidth=1.1];
+
+  subgraph cluster_input {
+    label="Input"; fontsize=12; color="#8aa4c8"; style="rounded";
+    camera [label="Kamera CSI IMX219\n(atau webcam USB)", fillcolor="#e8f1fb"];
+    capture [label="Frame Capture\nGStreamer/Argus -> appsink",
+             fillcolor="#e8f1fb"];
+  }
+
+  subgraph cluster_cv {
+    label="Computer Vision"; fontsize=12; color="#8ac89a"; style="rounded";
+    cv [label="Sign Detection\nresize + blur + HSV color mask\ncontour + convex hull + approxPolyDP\nshape & color scoring",
+        fillcolor="#eaf7ee"];
+    conf [label="Confidence\n0.55 shape + 0.30 color + 0.15 area",
+          fillcolor="#eaf7ee"];
+  }
+
+  subgraph cluster_logic {
+    label="Decision Logic"; fontsize=12; color="#d8b978"; style="rounded";
+    decision [label="Threshold + Debounce\nconfidence >= 0.55, stabil 5 frame,\nhilang 8 frame",
+              fillcolor="#fff6df"];
+    safe [label="Safe State\nsemua LED OFF\n(atau kuning blink)",
+          fillcolor="#fff6df"];
+  }
+
+  subgraph cluster_output {
+    label="Output"; fontsize=12; color="#c88a8a"; style="rounded";
+    gpio [label="Jetson.GPIO\nBOARD pin 7 / 11 / 13", fillcolor="#fdeaea"];
+    led [label="LED\nMERAH / KUNING / HIJAU", fillcolor="#fdeaea"];
+    ui [label="Overlay + Log\nsign, confidence, status LED,\nCSV + snapshot",
+        fillcolor="#fdeaea"];
+  }
+
+  camera -> capture -> cv -> conf -> decision;
+  decision -> gpio [label="STOP / SLOW / GO"];
+  gpio -> led;
+  decision -> safe [style=dashed,
+                    label="tidak ada sign / < threshold"];
+  safe -> gpio [style=dashed];
+  decision -> ui;
+  safe -> ui;
+}

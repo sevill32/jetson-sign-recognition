@@ -1,0 +1,48 @@
+[GPIO] GPIO simulation mode enabled
+========================================================================
+ Jetson Nano Sign Recognition
+ Kamera     : VideoFileCamera
+ Threshold  : 0.55
+ GPIO pins  : {'red': 7, 'yellow': 11, 'green': 13}
+ Safe state : all_off
+ Log        : /home/inf/computer-vision/jetson-sign-recognition/results/logs/run_20261022_114451.csv
+ Display    : headless
+ Jalankan tanpa batas; hentikan dengan Ctrl+C.
+========================================================================
+[11:44:51] SIGN=--    cand=STOP  conf=0.95 < 0.55 | LED R=0 Y=0 G=0 | SAFE=yes | 0.0 FPS | 0.0s
+[SNAPSHOT] /home/inf/computer-vision/jetson-sign-recognition/results/runtime/snapshots/20261022_114451_STOP.jpg
+[11:44:51] SIGN=STOP  conf=0.95 | LED R=1 Y=0 G=0 | SAFE=no  | 20.2 FPS | 0.2s
+[11:44:51] SIGN=STOP  conf=0.95 | LED R=1 Y=0 G=0 | SAFE=no  | 19.7 FPS | 0.7s
+[11:44:52] SIGN=STOP  conf=0.95 | LED R=1 Y=0 G=0 | SAFE=no  | 20.1 FPS | 1.3s
+[SNAPSHOT] /home/inf/computer-vision/jetson-sign-recognition/results/runtime/snapshots/20261022_114452_SLOW.jpg
+[11:44:52] SIGN=SLOW  conf=0.98 | LED R=0 Y=1 G=0 | SAFE=no  | 19.8 FPS | 1.7s
+[11:44:53] SIGN=SLOW  conf=0.99 | LED R=0 Y=1 G=0 | SAFE=no  | 20.1 FPS | 2.3s
+[11:44:53] SIGN=SLOW  conf=0.98 | LED R=0 Y=1 G=0 | SAFE=no  | 20.2 FPS | 2.8s
+[SNAPSHOT] /home/inf/computer-vision/jetson-sign-recognition/results/runtime/snapshots/20261022_114454_GO.jpg
+[11:44:54] SIGN=GO    conf=1.00 | LED R=0 Y=0 G=1 | SAFE=no  | 20.5 FPS | 3.2s
+[11:44:54] SIGN=GO    conf=1.00 | LED R=0 Y=0 G=1 | SAFE=no  | 20.5 FPS | 3.8s
+[11:44:55] SIGN=GO    conf=1.00 | LED R=0 Y=0 G=1 | SAFE=no  | 20.8 FPS | 4.3s
+[SNAPSHOT] /home/inf/computer-vision/jetson-sign-recognition/results/runtime/snapshots/20261022_114455_SAFE.jpg
+[11:44:55] SIGN=--    no detection | LED R=0 Y=0 G=0 | SAFE=yes | 21.2 FPS | 4.8s
+[11:44:56] SIGN=--    no detection | LED R=0 Y=0 G=0 | SAFE=yes | 21.0 FPS | 5.3s
+[11:44:57] SIGN=--    no detection | LED R=0 Y=0 G=0 | SAFE=yes | 20.7 FPS | 5.9s
+[SNAPSHOT] /home/inf/computer-vision/jetson-sign-recognition/results/runtime/snapshots/20261022_114457_STOP.jpg
+[11:44:57] SIGN=STOP  conf=0.95 | LED R=1 Y=0 G=0 | SAFE=no  | 20.5 FPS | 6.1s
+[11:44:57] SIGN=STOP  conf=0.95 | LED R=1 Y=0 G=0 | SAFE=no  | 19.9 FPS | 6.6s
+[11:44:58] SIGN=STOP  conf=0.00 | LED R=1 Y=0 G=0 | SAFE=no  | 19.3 FPS | 7.2s
+[SNAPSHOT] /home/inf/computer-vision/jetson-sign-recognition/results/runtime/snapshots/20261022_114458_SAFE.jpg
+[11:44:58] SIGN=--    no detection | LED R=0 Y=0 G=0 | SAFE=yes | 17.2 FPS | 7.4s
+[11:44:59] SIGN=--    no detection | LED R=0 Y=0 G=0 | SAFE=yes | 16.2 FPS | 7.9s
+[SNAPSHOT] /home/inf/computer-vision/jetson-sign-recognition/results/runtime/snapshots/20261022_114459_STOP.jpg
+[11:44:59] SIGN=STOP  conf=0.95 | LED R=1 Y=0 G=0 | SAFE=no  | 18.7 FPS | 8.4s
+[11:45:00] SIGN=STOP  conf=0.95 | LED R=1 Y=0 G=0 | SAFE=no  | 19.6 FPS | 9.0s
+[11:45:00] SIGN=STOP  conf=0.95 | LED R=1 Y=0 G=0 | SAFE=no  | 20.1 FPS | 9.5s
+[SNAPSHOT] /home/inf/computer-vision/jetson-sign-recognition/results/runtime/snapshots/20261022_114501_SLOW.jpg
+[11:45:01] SIGN=SLOW  conf=0.98 | LED R=0 Y=1 G=0 | SAFE=no  | 20.2 FPS | 9.9s
+[11:45:01] SIGN=SLOW  conf=0.99 | LED R=0 Y=1 G=0 | SAFE=no  | 20.3 FPS | 10.5s
+[11:45:02] SIGN=SLOW  conf=0.98 | LED R=0 Y=1 G=0 | SAFE=no  | 20.3 FPS | 11.0s
+------------------------------------------------------------------------
+Selesai: 217 frame dalam 11.1 detik (19.6 FPS rata-rata)
+Distribusi: SAFE=48, STOP=83, SLOW=53, GO=33
+Log CSV: /home/inf/computer-vision/jetson-sign-recognition/results/logs/run_20261022_114451.csv
+[GPIO] GPIO cleaned up

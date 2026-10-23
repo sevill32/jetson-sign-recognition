@@ -482,13 +482,13 @@ Foto/screenshot tersedia di [`results/screenshots/`](results/screenshots/).
 
 ## 10. Hasil dan Screenshot
 
-| Demo STOP | Demo SLOW |
+| STOP | SLOW |
 |---|---|
-| ![Demo STOP](results/screenshots/demo_STOP.jpg) | ![Demo SLOW](results/screenshots/demo_SLOW.jpg) |
+| ![Demo STOP](results/screenshots/real_STOP_dekat.jpg) | ![Demo SLOW](results/screenshots/real_SLOW_dekat.jpg) |
 
-| Demo GO | Safe state (tanpa sign) |
+| GO | Safe state (tanpa sign) |
 |---|---|
-| ![Demo GO](results/screenshots/demo_GO.jpg) | ![Safe](results/screenshots/demo_SAFE.jpg) |
+| ![Demo GO](results/screenshots/real_GO_dekat.jpg) | ![Safe](results/runtime/snapshots/20261023_103624_SAFE.jpg) |
 
 Contoh deteksi syntetic:
 [STOP dekat](results/screenshots/synthetic_STOP_dekat.jpg),

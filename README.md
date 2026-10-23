@@ -488,7 +488,7 @@ Foto/screenshot tersedia di [`results/screenshots/`](results/screenshots/).
 
 | GO | Safe state (tanpa sign) |
 |---|---|
-| ![Demo GO](results/screenshots/real_GO_dekat.jpeg) | ![Safe](results/runtime/snapshots/20261023_103624_SAFE.jpeg) |
+| ![Demo GO](results/screenshots/real_GO_dekat.jpeg) | ![Safe](results/runtime/snapshots/20261023_103624_SAFE.jpg.jpeg) |
 
 Contoh deteksi syntetic:
 [STOP dekat](results/screenshots/synthetic_STOP_dekat.jpg),

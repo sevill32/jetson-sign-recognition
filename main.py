@@ -82,7 +82,7 @@ def build_parser():
     parser.add_argument("--usb-index", type=int, default=None,
                         help="USB camera index")
     parser.add_argument("--flip", choices=("none", "horizontal", "vertical",
-                                           "rotate180"), default=None,
+                                            "rotate180"), default=None,
                         help="Flip camera image (for inverted mounting)")
     parser.add_argument("--video", default=None,
                         help="Video file for --camera video (demo/testing)")
@@ -102,6 +102,7 @@ def build_parser():
 
 
 def main(argv=None):
+
     args = build_parser().parse_args(argv)
     config = load_config(args.config)
 
@@ -152,6 +153,9 @@ def main(argv=None):
             blink_hz=gpio_config.get("blink_hz", 2.0),
             simulate=args.simulate_gpio,
             logger=lambda message: print("[GPIO] %s" % message))
+        
+        # Paksa matikan semua LED di awal program
+        leds.apply(None, now=time.time())
 
         log_path = os.path.join(log_dir, "run_%s.csv" % _timestamp())
         log_handle = open(log_path, "w")
@@ -192,23 +196,33 @@ def main(argv=None):
                 read_failures += 1
                 if read_failures >= 15:
                     raise CameraError("Kamera tidak memberikan frame "
-                                      "(15 kegagalan berturut-turut)")
+                                       "(15 kegagalan berturut-turut)")
                 time.sleep(0.05)
                 continue
             read_failures = 0
 
+            # 1. Ambil waktu saat ini
             now = time.time()
+
+            # 2. Lakukan deteksi frame & perbarui keputusan logika
             detection = detector.detect(frame)
             result = decision.update(detection)
-            led_states = leds.apply(result.sign, now=now)
 
+            # 3. Terapkan state ke LED berdasarkan hasil keputusan sign yang valid
+            if result.sign in ("STOP", "SLOW", "GO"):
+                led_states = leds.apply(result.sign, now=now)
+            else:
+                led_states = leds.all_off()
+
+            # 4. Hitung FPS
             delta = now - last_frame_time
             last_frame_time = now
             if delta > 0 and frame_index >= 2:
                 instant_fps = 1.0 / delta
                 fps = instant_fps if fps == 0 else (0.9 * fps +
-                                                    0.1 * instant_fps)
+                                                   0.1 * instant_fps)
 
+            # 5. Render overlay dan simpan snapshot jika berubah
             annotated = render_overlay(
                 frame, detection, result.sign, result.safe, led_states,
                 fps, threshold, result.reason)
@@ -225,6 +239,7 @@ def main(argv=None):
                                result.sign or "SAFE", snapshots_enabled)
                 snapshot_done = True
 
+            # 6. Tulis log ke CSV
             writer.writerow([
                 _iso_timestamp(), frame_index,
                 detection.label if detection else "",
@@ -239,6 +254,7 @@ def main(argv=None):
             if frame_index % 30 == 0:
                 log_handle.flush()
 
+            # 7. Cetak status berkala di terminal
             elapsed = now - start
             if (result.changed or result.sign != previous_sign or
                     now - last_status >= status_interval):
@@ -255,7 +271,11 @@ def main(argv=None):
             frame_index += 1
 
             if display:
-                cv2.imshow("Jetson Sign Recognition", annotated)
+               	window_name = "Jetson Sign Recognition"
+                cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
+                cv2.resizeWindow(window_name, 1600, 900)  # Ubah angka 1600 & 900 sesuai selera
+                
+                cv2.imshow(window_name, annotated)
                 key = cv2.waitKey(1) & 0xFF
                 if key in (27, ord("q")):
                     break

@@ -14,7 +14,7 @@ Generator: `tools/make_diagrams.py`.
 | 1 | LED merah |
 | 1 | LED kuning |
 | 1 | LED hijau |
-| 3 | Resistor 220-330 Ohm |
+| 3 | Resistor 1k Ohm |
 | 1 | Breadboard |
 | 4+ | Kabel jumper female-female |
 | 1 | Catu daya 5V 4A (barrel jack) |
@@ -26,15 +26,15 @@ Menggunakan **BOARD numbering** (nomor pin fisik header 40-pin), sesuai
 
 | Fungsi | BOARD pin | Nama GPIO | BCM | Komponen |
 |---|---|---|---|---|
-| STOP / merah | 7 | GPIO09 | 4 | resistor -> anoda LED merah |
-| SLOW / kuning | 11 | GPIO17 | 17 | resistor -> anoda LED kuning |
-| GO / hijau | 13 | GPIO27 | 27 | resistor -> anoda LED hijau |
-| GND | 6 | GND | - | katoda semua LED |
+| STOP / merah | 24 | GPIO18 | 18 | resistor -> anoda LED merah |
+| SLOW / kuning | 18 | GPIO12 | 12 | resistor -> anoda LED kuning |
+| GO / hijau | 23 | GPIO16 | 16 | resistor -> anoda LED hijau |
+| GND | GND | GND | - | katoda semua LED |
 
 Rangkaian per LED:
 
 ```
-BOARD pin 7/11/13 ── resistor 220-330 Ohm ── anoda LED ── katoda LED ── GND pin 6
+BOARD pin 24/18/23 ── resistor 1k Ohm ── anoda LED ── katoda LED ── GND pin GND
 ```
 
 ## 3. Langkah Wiring
@@ -44,11 +44,11 @@ BOARD pin 7/11/13 ── resistor 220-330 Ohm ── anoda LED ── katoda LED
    yang benar, kabel jangan dilipat tajam).
 3. Pasang tiga LED pada breadboard, catat kaki anoda (kaki panjang) dan
    katoda (kaki pendek / sisi datar).
-4. Hubungkan resistor dari pin 7 ke anoda LED merah.
-5. Hubungkan resistor dari pin 11 ke anoda LED kuning.
-6. Hubungkan resistor dari pin 13 ke anoda LED hijau.
+4. Hubungkan resistor dari pin 24 ke anoda LED merah.
+5. Hubungkan resistor dari pin 12 ke anoda LED kuning.
+6. Hubungkan resistor dari pin 23 ke anoda LED hijau.
 7. Hubungkan semua katoda LED ke rel GND breadboard.
-8. Hubungkan rel GND ke **pin 6** Jetson Nano.
+8. Hubungkan rel GND ke **pin GND** Jetson Nano.
 9. Periksa kembali dengan multimeter (opsional): tidak ada short antara
    3.3V/5V dan GND.
 10. Nyalakan Jetson Nano, lalu uji LED:
@@ -63,14 +63,14 @@ Jika LED tidak menyala:
 
 - Periksa polaritas LED.
 - Periksa nilai resistor dan koneksi breadboard.
-- Pastikan GND bersama terhubung ke pin 6.
+- Pastikan GND bersama terhubung ke pin GND.
 - Pastikan pin yang dipakai benar (BOARD vs BCM).
 - Coba `python3 tools/test_leds.py --simulate` untuk memastikan software.
 
 ## 4. Keamanan
 
 - **Jangan** menghubungkan LED langsung ke pin GPIO tanpa resistor.
-- Gunakan resistor 220-330 Ohm; arus GPIO Jetson Nano terbatas.
+- Gunakan resistor 1k Ohm; arus GPIO Jetson Nano terbatas.
 - Jangan memberi beban induktif (motor/relay) langsung ke GPIO tanpa
   driver/transistor.
 - Cabut daya sebelum mengubah wiring.
@@ -97,10 +97,10 @@ Saat tidak ada sign atau confidence di bawah threshold:
 | 1 | 3.3V |
 | 2 | 5V |
 | 6 | GND |
-| 7 | GPIO09 (BCM 4) |
+| 7 | GPIO18 (BCM 18) |
 | 9 | GND |
-| 11 | GPIO17 (BCM 17) |
-| 13 | GPIO27 (BCM 27) |
+| 11 | GPIO12 (BCM 12) |
+| 13 | GPIO16 (BCM 16) |
 | 14 | GND |
 | 20 | GND |
 | 25 | GND |

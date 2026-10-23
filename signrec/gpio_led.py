@@ -1,117 +1,125 @@
-"""LED output through Jetson.GPIO (with a simulation backend for testing)."""
 
-import time
+#!/usr/bin/env python3
+"""GPIO LED Controller for NVIDIA Jetson Nano."""
+
+try:
+    import Jetson.GPIO as GPIO
+    GPIO_AVAILABLE = True
+except (ImportError, RuntimeError):
+    GPIO = None
+    GPIO_AVAILABLE = False
 
 
-class LedController(object):
-    """Control one LED per sign colour.
+class LedController:
+    def __init__(
+        self,
+        pins,
+        sign_colors,
+        active_high=True,
+        mode="BOARD",
+        safe_state="all_off",
+        blink_hz=2.0,
+        simulate=False,
+        logger=None,
+    ):
+        self.pins = {
+            color.lower(): int(pin)
+            for color, pin in pins.items()
+        }
+        self.sign_colors = {
+            str(sign).strip().upper(): str(color).strip().lower()
+            for sign, color in sign_colors.items()
+        }
 
-    pins        : dict colour -> physical BOARD pin (e.g. {"red": 7, ...})
-    sign_colors : dict sign label -> colour (e.g. {"STOP": "red", ...})
-    safe_state  : "all_off" or "blink_yellow"
-    """
-
-    def __init__(self, pins, sign_colors, active_high=True, mode="BOARD",
-                 safe_state="all_off", blink_hz=2.0, simulate=False,
-                 logger=None):
-        self.pins = dict(pins)
-        self.sign_colors = dict(sign_colors)
         self.active_high = bool(active_high)
-        self.mode = mode
+        self.mode = str(mode).upper()
         self.safe_state = safe_state
-        self.blink_hz = float(blink_hz)
-        self.simulate = bool(simulate)
-        self.log = logger or (lambda message: None)
+        self.blink_hz = blink_hz
+        self.simulate = simulate or not GPIO_AVAILABLE
+        self.logger = logger or print
 
-        self._gpio = None
-        self._closed = False
-        self.states = dict((color, 0) for color in self.pins)
-        self._last_blink_phase = None
+        self.current_state = {
+            color: 0 for color in self.pins
+        }
+
+        if len(set(self.pins.values())) != len(self.pins):
+            raise ValueError("Setiap LED harus menggunakan pin GPIO berbeda.")
+
+        if self.mode not in ("BOARD", "BCM"):
+            raise ValueError("Mode GPIO harus BOARD atau BCM.")
 
         if not self.simulate:
-            self._setup_gpio()
-        else:
-            self.log("GPIO simulation mode enabled")
+            GPIO.setwarnings(False)
+            GPIO.setmode(
+                GPIO.BOARD if self.mode == "BOARD" else GPIO.BCM
+            )
 
-    # ------------------------------------------------------------------
-    def _setup_gpio(self):
-        try:
-            import Jetson.GPIO as GPIO
-        except ImportError:
-            raise RuntimeError(
-                "Jetson.GPIO tidak tersedia. Gunakan --simulate-gpio atau "
-                "instal paket python3-jetson-gpio.")
+            off_level = GPIO.LOW if self.active_high else GPIO.HIGH
 
-        self._gpio = GPIO
-        GPIO.setwarnings(False)
-        mode = GPIO.BOARD if str(self.mode).upper() == "BOARD" else GPIO.BCM
-        GPIO.setmode(mode)
-        for color, pin in self.pins.items():
-            GPIO.setup(pin, GPIO.OUT)
-            self._write_pin(pin, 0)
-        self.log("GPIO ready (mode=%s, pins=%s)" % (self.mode, self.pins))
+            for pin in self.pins.values():
+                GPIO.setup(pin, GPIO.OUT, initial=off_level)
 
-    def _write_pin(self, pin, on):
-        if self.simulate:
-            return
-        level = 1 if on else 0
-        if not self.active_high:
-            level = 0 if level else 1
-        self._gpio.output(pin, level)
-
-    def _write_color(self, color, on):
-        on = 1 if on else 0
-        if self.states.get(color, 0) == on:
-            return
-        self.states[color] = on
-        self._write_pin(self.pins[color], on)
-
-    # ------------------------------------------------------------------
-    def apply(self, sign, now=None):
-        """Set the LEDs according to the active sign (None means safe)."""
-        if now is None:
-            now = time.time()
-
-        desired = dict((color, 0) for color in self.pins)
-
-        if sign is not None and sign in self.sign_colors:
-            color = self.sign_colors[sign]
-            if color in desired:
-                desired[color] = 1
-        elif self.safe_state == "blink_yellow" and "yellow" in desired:
-            half_period = 0.5 / max(0.1, self.blink_hz)
-            phase = int(now / half_period) % 2
-            desired["yellow"] = 1 if phase == 0 else 0
-
-        for color, value in desired.items():
-            self._write_color(color, value)
-        return dict(self.states)
-
-    def all_off(self):
-        for color in self.pins:
-            self._write_color(color, 0)
-        return dict(self.states)
-
-    def status_text(self):
-        return "R=%d Y=%d G=%d" % (
-            self.states.get("red", 0),
-            self.states.get("yellow", 0),
-            self.states.get("green", 0),
+        self.all_off()
+        self.logger(
+            "LedController siap (simulasi: %s, active_high: %s)"
+            % (self.simulate, self.active_high)
         )
 
-    def close(self):
-        if self._closed:
+    def _write_pin(self, color, on):
+        if self.simulate:
             return
-        self._closed = True
+
+        if self.active_high:
+            level = GPIO.HIGH if on else GPIO.LOW
+        else:
+            level = GPIO.LOW if on else GPIO.HIGH
+
+        GPIO.output(self.pins[color], level)
+
+    def all_off(self):
+        """Matikan seluruh LED."""
+        for color in self.pins:
+            self._write_pin(color, False)
+            self.current_state[color] = 0
+
+        return dict(self.current_state)
+
+    def apply(self, sign_label, now=None):
+        """Nyalakan tepat satu LED sesuai sign; sign invalid = semua mati."""
+        sign = (
+            str(sign_label).strip().upper()
+            if sign_label is not None
+            else ""
+        )
+        target_color = self.sign_colors.get(sign)
+
+        if target_color not in self.pins:
+            self.all_off()
+            self.logger("Sign tidak valid: %r -> semua LED OFF" % sign_label)
+            return dict(self.current_state)
+
+        # Matikan semuanya terlebih dahulu agar tidak ada LED tertinggal ON.
+        self.all_off()
+
+        # Nyalakan hanya LED yang sesuai dengan sign.
+        self._write_pin(target_color, True)
+        self.current_state[target_color] = 1
+
+        self.logger(
+            "%s -> %s ON; LED lainnya OFF"
+            % (sign, target_color.upper())
+        )
+        return dict(self.current_state)
+
+    def close(self):
+        """Matikan LED dan lepaskan pin yang digunakan."""
         try:
             self.all_off()
         finally:
-            if self._gpio is not None:
-                try:
-                    self._gpio.cleanup(list(self.pins.values()))
-                except Exception:
-                    try:
-                        self._gpio.cleanup()
-                    except Exception:
-                        pass
-        self.log("GPIO cleaned up")
+            if not self.simulate:
+                GPIO.cleanup(list(self.pins.values()))
+
+        self.logger("GPIO dibersihkan.")
+
+
+

@@ -57,6 +57,23 @@ class DetectorTest(unittest.TestCase):
         frame = render_scene(None, brightness=1.0, seed=3)
         cv2.rectangle(frame, (200, 80), (440, 260), (0, 180, 0), -1)
         self.assertIsNone(self.detector.detect(frame))
+        frame = render_scene(None, brightness=1.0, seed=3)
+        cv2.rectangle(frame, (200, 80), (440, 260), (0, 0, 220), -1)
+        self.assertIsNone(self.detector.detect(frame))
+
+    def test_stop_survives_white_balance_shift(self):
+        for shift in (-15, 15):
+            frame = render_scene("STOP", scale=0.40, brightness=0.55,
+                                 seed=11)
+            hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV).astype(
+                "int16")
+            hsv[:, :, 0] = (hsv[:, :, 0] + shift) % 180
+            frame = cv2.cvtColor(hsv.astype("uint8"), cv2.COLOR_HSV2BGR)
+            detection = self.detector.detect(frame)
+            self.assertIsNotNone(detection,
+                                 "STOP hilang pada hue shift %d" % shift)
+            self.assertEqual(detection.label, "STOP")
+            self.assertGreaterEqual(detection.confidence, self.threshold)
 
     def test_bbox_maps_back_to_original_frame(self):
         frame = render_scene("STOP", frame_size=(1280, 720), scale=0.40,

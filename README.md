@@ -10,9 +10,9 @@ Camera -> Sign Recognition -> Decision Logic -> GPIO -> LED
 
 | Sign | Ciri | Keputusan | LED |
 |---|---|---|---|
-| **STOP** | oktagon merah | berhenti | MERAH (BOARD pin 7) |
-| **SLOW** | segitiga kuning | pelan | KUNING (BOARD pin 11) |
-| **GO** | lingkaran hijau | jalan | HIJAU (BOARD pin 13) |
+| **STOP** | oktagon merah | berhenti | MERAH (BOARD pin 24) |
+| **SLOW** | segitiga kuning | pelan | KUNING (BOARD pin 18) |
+| **GO** | lingkaran hijau | jalan | HIJAU (BOARD pin 23) |
 | tidak ada / confidence < 0.55 | - | **SAFE** | semua LED OFF |
 
 Metode yang digunakan adalah **Computer Vision**: segmentasi warna HSV +
@@ -51,7 +51,7 @@ berjalan langsung di JetPack 4.6 dengan OpenCV 3.2 bawaan.
 | Komputer | NVIDIA Jetson Nano 4GB |
 | Kamera | CSI IMX219 (sensor-id 0), kabel ribbon 15-pin |
 | Aktuator | 3 LED (merah, kuning, hijau) |
-| Resistor | 3x 220-330 Ohm |
+| Resistor | 3x 1k Ohm |
 | Protoboard | breadboard + kabel jumper female-female |
 | Catu daya | 5V 4A via barrel jack (disarankan) |
 | Opsional | webcam USB, monitor/HDMI, keyboard |
@@ -158,7 +158,7 @@ Default di `config/config.json`:
 
 ```json
 "gpio": {
-  "pins": {"red": 7, "yellow": 11, "green": 13},
+  "pins": {"red": 18, "yellow": 12, "green": 16},
   "safe_state": "all_off",
   "blink_hz": 2.0
 }
@@ -179,15 +179,15 @@ Panduan lengkap: [`docs/wiring.md`](docs/wiring.md).
 
 | Fungsi | BOARD pin | BCM | Komponen |
 |---|---|---|---|
-| STOP / LED merah | 7 | GPIO09 (BCM 4) | LED merah + resistor 220-330 Ohm |
-| SLOW / LED kuning | 11 | GPIO17 (BCM 17) | LED kuning + resistor 220-330 Ohm |
-| GO / LED hijau | 13 | GPIO27 (BCM 27) | LED hijau + resistor 220-330 Ohm |
-| GND bersama | 6 | - | katoda semua LED |
+| STOP / LED merah | 24 | GPIO18 (BCM 18) | LED merah + resistor 1k Ohm |
+| SLOW / LED kuning | 18 | GPIO12 (BCM 12) | LED kuning + resistor 1k Ohm |
+| GO / LED hijau | 23 | GPIO16 (BCM 16) | LED hijau + resistor 1k Ohm |
+| GND bersama | GND | - | katoda semua LED |
 
 Urutan rangkaian per LED:
 
 ```
-GPIO (pin 7/11/13) -> resistor 220-330 Ohm -> anoda LED -> katoda LED -> GND (pin 6)
+GPIO (pin 24/18/23) -> resistor 1k Ohm -> anoda LED -> katoda LED -> GND (pin GND)
 ```
 
 **Peringatan:**
@@ -242,20 +242,20 @@ gst-launch-1.0 -e nvarguscamerasrc sensor-id=0 num-buffers=30 ! \
   nvvidconv ! 'video/x-raw,format=I420' ! fakesink
 ```
 
-### Generate sign untuk dicetak
-
-```bash
-python3 tools/make_signs.py
+### Dataset
 ```
 
-Hasil: `assets/signs/STOP.png`, `SLOW.png`, `GO.png`. Cetak dengan lebar
-minimal 15 cm, tempel pada karton agar tidak melengkung.
+Gambar untuk dataset tersimpan di `assets/dataset/`: gambar `train`/`val`/`test`, label YOLO,
+`labels.csv`, `dataset.yaml`, `classes.txt`, dan `preview.jpg`. Dataset default
+berisi 840 gambar 640x360 (240 per kelas + 120 background) dengan variasi
+jarak, rotasi, posisi, pencahayaan, dan background. Detail ada di
+`assets/dataset/README.md`.
 
 ---
 
 ## 7. Menjalankan Program
 
-### Mode normal (dengan monitor)
+ ### Mode normal (dengan monitor)
 
 ```bash
 python3 main.py
@@ -271,6 +271,21 @@ python3 main.py --headless
 
 Status dicetak ke terminal, snapshot disimpan ke
 `results/runtime/snapshots/`, log CSV ke `results/logs/`.
+
+### Live camera realtime (jendela + stream web)
+
+```bash
+# jendela di HDMI + stream MJPEG di port 8000
+python3 tools/live_camera.py
+
+# tanpa monitor (SSH): stream web saja + GPIO simulasi
+python3 tools/live_camera.py --no-window --simulate-gpio
+```
+
+Buka `http://<ip-jetson>:8000/` dari laptop/HP di jaringan yang sama. Overlay
+deteksi, status SAFE, dan indikator LED ikut tampil di stream. Endpoint lain:
+`/snapshot.jpg` (JPEG terakhir) dan `/health`. Opsi berguna: `--port`,
+`--stream-width`, `--quality`, `--no-stream`, `--threshold`, `--duration`.
 
 ### Tanpa hardware GPIO (simulasi)
 
@@ -348,24 +363,26 @@ jetson-sign-recognition/
 │   ├── decision.py
 │   ├── gpio_led.py
 │   ├── overlay.py
+│   ├── webstream.py
 │   └── signs.py
 ├── tools/
-│   ├── make_signs.py
-│   ├── make_demo_video.py
 │   ├── synthetic_benchmark.py
 │   ├── evaluate_camera.py
+│   ├── live_camera.py
+│   ├── make_demo_video.py
 │   ├── test_leds.py
-│   ├── calibrate_hsv.py
-│   └── make_diagrams.py
+│   └── calibrate_hsv.py
 ├── tests/
 │   ├── test_detector.py
 │   ├── test_decision.py
-│   └── test_gpio_led.py
+│   ├── test_gpio_led.py
+│   └── test_webstream.py
 ├── docs/
 │   ├── architecture.md / .png / .svg / .dot
 │   ├── wiring.md / .png / .svg
 │   └── testing.md
 ├── assets/signs/          # PNG sign siap cetak
+├── assets/dataset/        # dataset berlabel (YOLO + CSV)
 └── results/
     ├── synthetic/         # benchmark + screenshot sintetis
     ├── screenshots/       # bukti screenshot
@@ -456,8 +473,8 @@ Hasil masuk ke `results/evaluation_camera.csv` dan screenshot ke
 | Synthetic 3 jarak x 2 cahaya | Lulus 54/54, 0/10 false positive |
 | Integrasi kamera CSI | Lulus (10 detik, safe state) |
 | Alur keputusan + pergantian sign (video) | Lulus |
-| LED fisik via GPIO | **Menunggu pengujian hardware** |
-| Matriks sign fisik 18 kondisi | **Menunggu pengujian hardware** |
+| LED fisik via GPIO | Lulus 3/3 |
+| Matriks sign fisik 18 kondisi | Lulus 18/18 |
 
 Foto/screenshot tersedia di [`results/screenshots/`](results/screenshots/).
 
@@ -503,8 +520,7 @@ Contoh deteksi syntetic:
 - Pencahayaan sangat redup atau warna sign pudar memerlukan kalibrasi HSV.
 - Belum ada tracking objek; stabilitas hanya menggunakan debounce frame.
 - Untuk pengembangan: MobileNet/YOLO + TensorRT, tracking (SORT/DeepSORT),
-  atau pemisahan node ROS 2 (`camera_node`, `detector_node`,
-  `decision_node`, `gpio_node`).
+  (`camera_node`, `detector_node`, `decision_node`, `gpio_node`).
 
 ---
 

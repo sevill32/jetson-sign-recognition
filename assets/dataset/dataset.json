@@ -1,0 +1,31 @@
+{
+  "total": 840,
+  "width": 640,
+  "height": 360,
+  "seed": 2026,
+  "classes": {
+    "STOP": 0,
+    "SLOW": 1,
+    "GO": 2
+  },
+  "splits": {
+    "train": {
+      "STOP": 168,
+      "SLOW": 168,
+      "GO": 168,
+      "NONE": 84
+    },
+    "val": {
+      "STOP": 36,
+      "SLOW": 36,
+      "GO": 36,
+      "NONE": 18
+    },
+    "test": {
+      "STOP": 36,
+      "SLOW": 36,
+      "GO": 36,
+      "NONE": 18
+    }
+  }
+}

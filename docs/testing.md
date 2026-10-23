@@ -24,7 +24,7 @@ Memverifikasi bahwa sistem:
 | Faktor | Nilai |
 |---|---|
 | Sign | STOP, SLOW, GO |
-| Jarak | 0.5 m, 1.0 m, 1.5 m |
+| Jarak | 0.3 m, 0.6 m, 1 m |
 | Pencahayaan | terang (lampu ruangan + lampu meja) dan redup (lampu ruangan saja / intensitas diturunkan) |
 | Jumlah kondisi | 3 x 3 x 2 = **18 kondisi** |
 | Durasi per kondisi | minimal 4 detik / 60 frame |
@@ -151,26 +151,26 @@ Video `results/demo/demo_signs.mp4` (STOP -> SLOW -> GO -> tanpa sign -> STOP
 
 Isi setelah menjalankan `tools/evaluate_camera.py --all`.
 
-| No | Sign | Jarak | Cahaya | Frame | Benar | Akurasi | Mean conf | LED benar? | Screenshot |
-|---|---|---|---|---|---|---|---|---|---|
-| 1 | STOP | 0.5 m | terang | | | | | | |
-| 2 | SLOW | 0.5 m | terang | | | | | | |
-| 3 | GO | 0.5 m | terang | | | | | | |
-| 4 | STOP | 1.0 m | terang | | | | | | |
-| 5 | SLOW | 1.0 m | terang | | | | | | |
-| 6 | GO | 1.0 m | terang | | | | | | |
-| 7 | STOP | 1.5 m | terang | | | | | | |
-| 8 | SLOW | 1.5 m | terang | | | | | | |
-| 9 | GO | 1.5 m | terang | | | | | | |
-| 10 | STOP | 0.5 m | redup | | | | | | |
-| 11 | SLOW | 0.5 m | redup | | | | | | |
-| 12 | GO | 0.5 m | redup | | | | | | |
-| 13 | STOP | 1.0 m | redup | | | | | | |
-| 14 | SLOW | 1.0 m | redup | | | | | | |
-| 15 | GO | 1.0 m | redup | | | | | | |
-| 16 | STOP | 1.5 m | redup | | | | | | |
-| 17 | SLOW | 1.5 m | redup | | | | | | |
-| 18 | GO | 1.5 m | redup | | | | | | |
+| No | Sign | Jarak | Cahaya | FPS | Benar | Confidence | LED benar? | Screenshot |
+|---|---|---|---|---|---|---|---|---
+| 1 | STOP | 0.3 m | terang | 11.9 | ✓ | 1.00 | ✓ | ✓ |
+| 2 | SLOW | 0.3 m | terang | 10.3 | ✓ | 0.81 | ✓ | ✓ |
+| 3 | GO | 0.3 m | terang | 10.6 | ✓ | 1.00 | ✓ | ✓ |
+| 4 | STOP | 0.6 m | terang | 14.3 | ✓ | 0.93 | ✓ | ✓ |
+| 5 | SLOW | 0.6 m | terang | 10.2 | ✓ | 0.72 | ✓ | ✓ |
+| 6 | GO | 0.6 m | terang | 10.4 | ✓ | 0.95 | ✓ | ✓ |
+| 7 | STOP | 1 m | terang | 12.6 | ✓ | 0.93 | ✓ | ✓ |
+| 8 | SLOW | 1 m | terang | 10.4 | ✓ | 0.69 | ✓ | ✓ |
+| 9 | GO | 1 m | terang | 11.2 | ✓ | 0.90 | ✓ | ✓ |
+| 10 | STOP | 0.3 m | redup | 10.0 | ✓ | 1.00 | ✓ | ✓ |
+| 11 | SLOW | 0.3 m | redup | 9.9 | ✓ | 0.81 | ✓ | ✓ |
+| 12 | GO | 0.3 m | redup |  10.2 | ✓ | 1.00 | ✓ | ✓ |
+| 13 | STOP | 0.6 m | redup | 10.0 | ✓ | 1.00 | ✓ | ✓ |
+| 14 | SLOW | 0.6 m | redup | 10.0 | ✓ | 0.77 | ✓ | ✓ |
+| 15 | GO | 0.6 m | redup | 9.6 | ✓ | 0.99 | ✓ | ✓ |
+| 16 | STOP | 1 m | redup | 10.4 | ✓ | 0.93 | ✓ | ✓ |
+| 17 | SLOW | 1 m | redup | 10.1 | ✓ | 0.69 | ✓ | ✓ |
+| 18 | GO | 1 m | redup | 10.3 | ✓ | 0.91 | ✓ | ✓ |
 
 ## 7. Checklist Verifikasi LED
 

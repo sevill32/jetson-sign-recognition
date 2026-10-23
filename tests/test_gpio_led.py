@@ -8,7 +8,7 @@ if ROOT not in sys.path:
 
 from signrec.gpio_led import LedController
 
-PINS = {"red": 7, "yellow": 11, "green": 13}
+PINS = {"red": 18, "yellow": 12, "green": 16}
 SIGN_COLORS = {"STOP": "red", "SLOW": "yellow", "GO": "green"}
 
 

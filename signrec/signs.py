@@ -83,32 +83,64 @@ def make_sign(label, size=800):
     raise ValueError("Unknown sign label: %s" % label)
 
 
-def _background(width, height, seed=0):
+BACKGROUND_STYLES = ("gradient", "asphalt", "wall", "sky")
+
+
+def _sign_alpha(sign):
+    """Return an alpha mask that removes the paper around the sign shape."""
+    difference = np.max(np.abs(sign.astype(np.int16) -
+                               np.array(PAPER, dtype=np.int16)), axis=2)
+    paper = ((difference <= 8).astype(np.uint8) * 255)
+    height, width = paper.shape
+    flood_mask = np.zeros((height + 2, width + 2), dtype=np.uint8)
+    for seed in ((0, 0), (width - 1, 0), (0, height - 1),
+                 (width - 1, height - 1)):
+        if paper[seed[1], seed[0]] == 255:
+            cv2.floodFill(paper, flood_mask, seed, 128)
+    return np.where(paper == 128, 0, 255).astype(np.uint8)
+
+
+def _background(width, height, seed=0, style="gradient"):
     rng = np.random.RandomState(seed)
-    gradient = np.linspace(55, 175, height, dtype=np.float32)
+    low, high = 55.0, 175.0
+    tint = (1.0, 1.0, 1.0)
+    if style == "asphalt":
+        low, high = 35.0, 95.0
+        tint = (1.0, 0.98, 0.95)
+    elif style == "wall":
+        low, high = 130.0, 215.0
+        tint = (0.92, 0.97, 1.02)
+    elif style == "sky":
+        low, high = 120.0, 220.0
+        tint = (1.08, 0.92, 0.72)
+
+    gradient = np.linspace(low, high, height, dtype=np.float32)
     base = np.zeros((height, width, 3), dtype=np.float32)
-    base[:, :, 0] = gradient[:, None]
-    base[:, :, 1] = gradient[:, None]
-    base[:, :, 2] = gradient[:, None]
-    base += rng.normal(0.0, 5.0, base.shape)
+    for channel in range(3):
+        base[:, :, channel] = gradient[:, None] * tint[channel]
+    noise = 10.0 if style == "asphalt" else 5.0
+    base += rng.normal(0.0, noise, base.shape)
     return base
 
 
 def render_scene(label, frame_size=(640, 360), scale=0.35, brightness=1.0,
-                 seed=0, rotation=0.0, offset=(0.0, 0.0), blur=False):
+                 seed=0, rotation=0.0, offset=(0.0, 0.0), blur=False,
+                 background="gradient", return_bbox=False):
     """Render a sign on a synthetic background.
 
     scale      : sign image height / frame height
     brightness : multiplier for the whole scene (1.0 = normal, 0.45 = dim)
     offset     : relative offset (dx, dy) in frame units, e.g. (0.1, -0.05)
+    background : "gradient", "asphalt", "wall" or "sky"
+    return_bbox: also return (x, y, w, h) of the sign in the frame
     """
     width, height = frame_size
     rng = np.random.RandomState(seed)
-    scene = _background(width, height, seed=seed)
+    scene = _background(width, height, seed=seed, style=background)
 
     if label is None:
         scene = np.clip(scene * brightness, 0, 255).astype(np.uint8)
-        return scene
+        return (scene, None) if return_bbox else scene
 
     sign_size = max(24, int(round(scale * height)))
     sign = make_sign(label, size=sign_size)
@@ -120,12 +152,23 @@ def render_scene(label, frame_size=(640, 360), scale=0.35, brightness=1.0,
     if blur or scale < 0.24:
         sign = cv2.GaussianBlur(sign, (3, 3), 0)
 
+    alpha = _sign_alpha(sign)
     center_x = int(width / 2.0 + offset[0] * width)
     center_y = int(height / 2.0 + offset[1] * height)
     x0 = max(0, min(width - sign_size, center_x - sign_size // 2))
     y0 = max(0, min(height - sign_size, center_y - sign_size // 2))
-    scene[y0:y0 + sign_size, x0:x0 + sign_size] = sign.astype(np.float32)
+    region = scene[y0:y0 + sign_size, x0:x0 + sign_size]
+    alpha_f = (alpha / 255.0)[:, :, None]
+    region[:] = sign.astype(np.float32) * alpha_f + region * (1.0 - alpha_f)
+
+    bbox = None
+    rows, columns = np.where(alpha > 0)
+    if rows.size:
+        bbox = (int(x0 + columns.min()), int(y0 + rows.min()),
+                int(columns.max() - columns.min() + 1),
+                int(rows.max() - rows.min() + 1))
 
     scene *= brightness
     scene += rng.normal(0.0, 4.0, scene.shape)
-    return np.clip(scene, 0, 255).astype(np.uint8)
+    scene = np.clip(scene, 0, 255).astype(np.uint8)
+    return (scene, bbox) if return_bbox else scene
